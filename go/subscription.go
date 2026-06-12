@@ -108,36 +108,49 @@ func (s *Subscription) handleCommit(ctx context.Context, evt *comatproto.SyncSub
 
 	var postsToDelete []string
 	for _, op := range evt.Ops {
+		// Example URI: at://did:plc:aoza4myjywbvl53obgcoh6e4/app.bsky.feed.post/3mo4a4wxqgs2i
+		uri := fmt.Sprintf("at://%s/%s", evt.Repo, op.Path)
+
+		// Example collection: app.bsky.feed.post, app.bsky.feed.like, etc...
 		collection := strings.Split(op.Path, "/")[0]
 
 		switch op.Action {
 		case "create":
-			if collection != "app.bsky.feed.post" || op.Cid == nil {
-				continue
+			if op.Cid == nil {
+				continue // invalid data
 			}
 
+			// Get the record bytes
 			_, recordCBOR, err := rr.GetRecordBytes(ctx, op.Path)
 			if err != nil {
 				s.logger.Error("reading record from car", "err", err)
 				continue
 			}
 
-			var post bsky.FeedPost
-			if err := post.UnmarshalCBOR(bytes.NewReader(*recordCBOR)); err != nil {
-				s.logger.Error("failed to parse post record", "err", err)
-				continue
-			}
-			fmt.Println(post.Text)
-			if strings.Contains(strings.ToLower(post.Text), "alf") {
-				uri := fmt.Sprintf("at://%s/%s", evt.Repo, op.Path)
-				indexedAt := time.Now().UTC().Format(time.RFC3339Nano)
-				if err := s.db.InsertPost(uri, op.Cid.String(), indexedAt); err != nil {
-					s.logger.Error("inserting post", "err", err)
+			switch collection {
+			case "app.bsky.feed.post":
+				// Unmarshal in to a Post object
+				var post bsky.FeedPost
+				if err := post.UnmarshalCBOR(bytes.NewReader(*recordCBOR)); err != nil {
+					s.logger.Error("failed to parse post record", "err", err)
+					continue
+				}
+
+				// Print the post text just to make sure the firehose subscription is alive
+				fmt.Println(post.Text)
+
+				// Insert the post if it contains the word "alf"
+				if strings.Contains(strings.ToLower(post.Text), "alf") {
+					indexedAt := time.Now().UTC().Format(time.RFC3339Nano)
+					if err := s.db.InsertPost(uri, op.Cid.String(), indexedAt); err != nil {
+						s.logger.Error("inserting post", "err", err)
+					}
 				}
 			}
 
 		case "delete":
-			if collection == "app.bsky.feed.post" {
+			switch collection {
+			case "app.bsky.feed.post":
 				uri := fmt.Sprintf("at://%s/%s", evt.Repo, op.Path)
 				postsToDelete = append(postsToDelete, uri)
 			}
