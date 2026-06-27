@@ -59,6 +59,7 @@ export class FeedGenerator {
     }
     feedGeneration(server, ctx)
     describeGenerator(server, ctx)
+    app.get('/xrpc/_health', (_req, res) => res.send('OK'))
     app.use(server.xrpc.router)
     app.use(wellKnown(ctx))
 

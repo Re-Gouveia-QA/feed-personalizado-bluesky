@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: feed-generator
+    runtime: node
+    plan: starter
+    buildCommand: yarn install --frozen-lockfile && yarn build
+    startCommand: yarn start
+    healthCheckPath: /xrpc/_health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FEEDGEN_LISTENHOST
+        value: 0.0.0.0
+      - key: FEEDGEN_HOSTNAME
+        fromService:
+          type: web
+          name: feed-generator
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
+      - key: FEEDGEN_SQLITE_LOCATION
+        value: /var/data/feedgen.sqlite
+      - key: FEEDGEN_SUBSCRIPTION_ENDPOINT
+        value: wss://bsky.network
+      - key: FEEDGEN_SUBSCRIPTION_RECONNECT_DELAY
+        value: 3000
+      - key: FEEDGEN_REFRESH_INTERVAL_MINUTES
+        value: 20
+      - key: FEEDGEN_PUBLISHER_DID
+        sync: false
+      - key: FEEDGEN_MATCH_REGEX
+        sync: false
+    disk:
+      name: feedgen-data
+      mountPath: /var/data
+      sizeGB: 1

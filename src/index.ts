@@ -7,8 +7,11 @@ const run = async () => {
   const serviceDid =
     maybeStr(process.env.FEEDGEN_SERVICE_DID) ?? `did:web:${hostname}`
   const server = FeedGenerator.create({
-    port: maybeInt(process.env.FEEDGEN_PORT) ?? 3000,
-    listenhost: maybeStr(process.env.FEEDGEN_LISTENHOST) ?? 'localhost',
+    port:
+      maybeInt(process.env.PORT) ?? maybeInt(process.env.FEEDGEN_PORT) ?? 3000,
+    listenhost:
+      maybeStr(process.env.FEEDGEN_LISTENHOST) ??
+      (maybeStr(process.env.PORT) ? '0.0.0.0' : 'localhost'),
     sqliteLocation: maybeStr(process.env.FEEDGEN_SQLITE_LOCATION) ?? ':memory:',
     subscriptionEndpoint:
       maybeStr(process.env.FEEDGEN_SUBSCRIPTION_ENDPOINT) ??
