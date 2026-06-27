@@ -16,4 +16,6 @@ export type Config = {
   serviceDid: string
   publisherDid: string
   subscriptionReconnectDelay: number
+  feedMatchRegex: string
+  feedRefreshIntervalMinutes: number
 }
