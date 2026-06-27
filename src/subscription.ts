@@ -76,8 +76,20 @@ const parseRegex = (value: string) => {
 
   const literal = trimmed.match(/^\/(.+)\/([dgimsuvy]*)$/)
   if (literal) {
-    return new RegExp(literal[1], literal[2])
+    const { pattern, flags } = normalizeRegexPattern(literal[1], literal[2])
+    return new RegExp(pattern, flags)
   }
 
-  return new RegExp(trimmed, 'i')
+  const { pattern, flags } = normalizeRegexPattern(trimmed, 'i')
+  return new RegExp(pattern, flags)
+}
+
+const normalizeRegexPattern = (pattern: string, flags: string) => {
+  const pcreCaseInsensitive = pattern.match(/^\(\?i\)(.*)$/)
+  if (!pcreCaseInsensitive) return { pattern, flags }
+
+  return {
+    pattern: pcreCaseInsensitive[1],
+    flags: flags.includes('i') ? flags : `${flags}i`,
+  }
 }
