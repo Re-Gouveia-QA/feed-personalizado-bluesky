@@ -12,7 +12,7 @@ export const handler = async (ctx: AppContext, params: QueryParams) => {
   let builder = ctx.db
     .selectFrom('custom_post')
     .selectAll()
-    .where('createdAt', '<=', latestVisibleTime)
+    //.where('createdAt', '<=', latestVisibleTime)
     .orderBy('createdAt', 'desc')
     .orderBy('cid', 'desc')
     .limit(params.limit)
