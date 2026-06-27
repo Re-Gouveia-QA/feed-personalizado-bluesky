@@ -1,7 +1,7 @@
 import { QueryParams } from '../lexicon/types/app/bsky/feed/getFeedSkeleton'
 import { AppContext } from '../config'
 
-export const shortname = 'rag-feed'
+export const shortname = 'rag-feed-v2'
 
 export const handler = async (ctx: AppContext, params: QueryParams) => {
   const refreshIntervalMs = ctx.cfg.feedRefreshIntervalMinutes * 60 * 1000
